@@ -636,12 +636,14 @@ function EventList() {
             <style>{`
                 .cmcu-events-hub {
                     position: relative;
+                    width: 100%;
                     max-width: 1240px;
                     margin: 0 auto;
                     border-radius: 22px;
                     padding: 24px 26px 48px 26px;
                     transition: all 0.25s ease;
                     overflow: hidden;
+                    box-sizing: border-box;
                 }
                 .hub-dark {
                     background: #121216;
@@ -658,7 +660,13 @@ function EventList() {
                     box-shadow: 0 12px 32px -10px rgba(15, 23, 42, 0.08);
                 }
                 @media (max-width: 768px) {
-                    .cmcu-events-hub { padding: 16px 14px 32px 14px; }
+                    .cmcu-events-hub {
+                        padding: 12px 6px 36px 6px;
+                        border-radius: 14px;
+                    }
+                    .cmcu-ambient-orb {
+                        display: none;
+                    }
                 }
 
                 .cmcu-ambient-orb {
@@ -1075,9 +1083,11 @@ function EventList() {
 
                 .events-main-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(295px, 1fr));
-                    gap: 22px;
+                    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+                    gap: 20px;
                     margin-bottom: 36px;
+                    width: 100%;
+                    box-sizing: border-box;
                 }
                 .tbx-ticket-card {
                     position: relative;
@@ -1085,6 +1095,9 @@ function EventList() {
                     flex-direction: column;
                     border-radius: 18px;
                     overflow: hidden;
+                    width: 100%;
+                    max-width: 100%;
+                    box-sizing: border-box;
                     transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
                 }
                 .hub-dark .tbx-ticket-card {
@@ -1198,18 +1211,23 @@ function EventList() {
                 .admin-card-quick-bar {
                     display: grid;
                     grid-template-columns: repeat(3, 1fr);
-                    gap: 6px;
+                    gap: 5px;
                     margin-top: 12px;
                     padding-top: 10px;
                     border-top: 1px solid rgba(148, 163, 184, 0.18);
+                    width: 100%;
+                    box-sizing: border-box;
                 }
                 .admin-q-btn {
-                    padding: 6px 8px;
+                    padding: 6px 4px;
                     border-radius: 8px;
-                    font-size: 0.75rem;
+                    font-size: 0.72rem;
                     font-weight: 700;
                     text-align: center;
                     text-decoration: none;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                     transition: all 0.18s ease;
                 }
                 .admin-q-btn.edit {
@@ -1233,13 +1251,16 @@ function EventList() {
 
                 .tbx-venues-row {
                     display: flex;
-                    gap: 16px;
+                    gap: 14px;
                     overflow-x: auto;
                     scroll-behavior: smooth;
                     padding: 6px 4px 14px 4px;
                     scrollbar-width: thin;
                     scrollbar-color: rgba(45, 194, 117, 0.4) transparent;
                     -webkit-overflow-scrolling: touch;
+                    max-width: 100%;
+                    width: 100%;
+                    box-sizing: border-box;
                 }
                 .tbx-venues-row::-webkit-scrollbar {
                     height: 6px;

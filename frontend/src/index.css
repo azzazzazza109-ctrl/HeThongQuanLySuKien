@@ -10,6 +10,22 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+#root {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
 body {
   font-family: var(--font-family);
   background-image: linear-gradient(rgba(243, 244, 246, 0.75), rgba(243, 244, 246, 0.75)), url('https://i.pinimg.com/originals/28/0e/15/280e15a440db7b28cc9f854eb1dd3d4f.gif');

@@ -739,36 +739,58 @@ export default function MainLayout() {
           .cmcu-global-search { max-width: 210px; }
         }
 
+        .cmcu-app-shell {
+          width: 100%;
+          max-width: 100vw;
+          overflow-x: hidden;
+          min-width: 0;
+        }
+        .cmcu-layout-body {
+          width: 100%;
+          max-width: 100%;
+          overflow-x: hidden;
+          min-width: 0;
+          padding-bottom: 96px;
+        }
+
         @media (max-width: 920px) {
           .cmcu-main-content {
-            padding: 12px 10px 88px 10px;
+            padding: 10px 8px 100px 8px;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            overflow-x: hidden;
           }
           .cmcu-top-navbar {
-            top: 8px;
-            margin: 8px 12px 0 12px;
+            top: 6px;
+            margin: 6px 8px 0 8px;
             padding: 6px 10px;
-            height: 54px;
-            border-radius: 15px;
+            height: 52px;
+            border-radius: 14px;
+            max-width: calc(100vw - 16px);
+            box-sizing: border-box;
           }
           .cmcu-desktop-nav { display: none; }
-          .cmcu-global-search { max-width: none; min-width: 110px; height: 35px; }
+          .cmcu-global-search { max-width: none; min-width: 0; flex: 1; height: 35px; }
           .cmcu-profile-meta { display: none; }
           .cmcu-profile-pill { padding: 3px; }
 
           .cmcu-mobile-bottom-bar {
             position: fixed;
-            bottom: 10px;
-            left: 12px;
-            right: 12px;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            max-width: calc(100vw - 16px);
+            box-sizing: border-box;
             z-index: 1050;
-            height: 60px;
-            padding: 5px 8px;
-            border-radius: 18px;
+            height: 56px;
+            padding: 4px 6px;
+            border-radius: 16px;
             backdrop-filter: blur(20px);
             display: flex;
             align-items: center;
             justify-content: space-around;
-            gap: 4px;
+            gap: 2px;
           }
           .cmcu-theme-dark .cmcu-mobile-bottom-bar {
             background: rgba(15, 22, 46, 0.95);
@@ -781,19 +803,27 @@ export default function MainLayout() {
             box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14);
           }
           .cmcu-mobile-tab-item {
-            flex: 1;
-            min-width: 54px;
+            flex: 1 1 0;
+            min-width: 0;
             height: 100%;
-            border-radius: 13px;
+            border-radius: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 3px;
+            gap: 2px;
             text-decoration: none;
-            font-size: 0.68rem;
+            font-size: 0.62rem;
             font-weight: 600;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 2px 1px;
+          }
+          .cmcu-mobile-tab-item span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
           }
           .cmcu-theme-dark .cmcu-mobile-tab-item { color: #94a3b8; }
           .cmcu-theme-light .cmcu-mobile-tab-item { color: #64748b; }
@@ -803,21 +833,26 @@ export default function MainLayout() {
             font-weight: 800;
             border: 1px solid rgba(45, 194, 117, 0.45);
           }
-          .cmcu-layout-body { padding-bottom: 78px; }
         }
 
         @media (max-width: 640px) {
           .cmcu-main-content {
-            padding: 8px 6px 88px 6px;
+            padding: 6px 4px 105px 4px;
           }
           .cmcu-top-navbar {
-            margin: 6px 8px 0 8px;
-            padding: 5px 8px;
+            margin: 4px 6px 0 6px;
+            padding: 4px 8px;
+            max-width: calc(100vw - 12px);
           }
           .cmcu-mobile-bottom-bar {
-            left: 8px;
-            right: 8px;
-            bottom: 8px;
+            left: 6px;
+            right: 6px;
+            bottom: 6px;
+            height: 54px;
+            max-width: calc(100vw - 12px);
+          }
+          .cmcu-mobile-tab-item {
+            font-size: 0.58rem;
           }
         }
 

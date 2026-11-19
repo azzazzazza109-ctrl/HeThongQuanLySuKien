@@ -296,12 +296,6 @@ export function generatePosterSvgDataUrl({
         <rect width="800" height="450" fill="url(#baseBg)" />
         <rect width="800" height="450" fill="url(#dotGrid)" />
         ${artworkLayer}
-
-        <g transform="translate(32, 32)">
-            <rect width="138" height="32" rx="16" fill="rgba(9, 13, 22, 0.72)" stroke="rgba(255,255,255,0.25)" stroke-width="1.2" />
-            <circle cx="20" cy="16" r="6" fill="${t.neon}" />
-            <text x="34" y="21" font-family="Inter, Segoe UI, sans-serif" font-size="11.5" font-weight="900" fill="#ffffff" letter-spacing="1.2">CMCU EVENTS</text>
-        </g>
     </svg>`;
 
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
@@ -731,7 +725,66 @@ function EventList() {
                     gap: 18px;
                 }
                 @media (max-width: 860px) {
-                    .tbx-hero-pair { grid-template-columns: 1fr; }
+                    .tbx-hero-pair {
+                        grid-template-columns: 1fr;
+                    }
+                    .tbx-hero-pair .tbx-hero-banner-item:nth-child(n+2) {
+                        display: none;
+                    }
+                    .tbx-hero-banner-item {
+                        aspect-ratio: auto;
+                        min-height: 260px;
+                        border-radius: 16px;
+                    }
+                    .tbx-hero-top-badges {
+                        top: 10px;
+                        left: 10px;
+                        gap: 5px;
+                        max-width: calc(100% - 110px);
+                    }
+                    .hero-faculty-chip, .hero-category-chip {
+                        font-size: 0.68rem;
+                        padding: 3px 8px;
+                    }
+                    .hero-status-pulse {
+                        top: 10px;
+                        right: 10px;
+                        font-size: 0.68rem;
+                        padding: 3px 8px;
+                    }
+                    .tbx-hero-content {
+                        padding: 12px 14px 12px 14px;
+                        gap: 5px;
+                    }
+                    .tbx-hero-title {
+                        font-size: 1.05rem;
+                        line-height: 1.35;
+                    }
+                    .tbx-hero-meta-row {
+                        gap: 8px;
+                        font-size: 0.74rem;
+                    }
+                    .tbx-hero-footer {
+                        gap: 8px;
+                        margin-top: 4px;
+                    }
+                    .tbx-hero-price-tag {
+                        font-size: 0.78rem;
+                        white-space: nowrap;
+                    }
+                    .tbx-hero-see-btn {
+                        font-size: 0.76rem;
+                        padding: 6px 12px;
+                        white-space: nowrap;
+                        flex-shrink: 0;
+                    }
+                    .tbx-hero-nav {
+                        width: 32px;
+                        height: 32px;
+                        font-size: 1.1rem;
+                    }
+                    .tbx-hero-nav.left { left: 6px; }
+                    .tbx-hero-nav.right { right: 6px; }
                 }
                 .tbx-hero-banner-item {
                     position: relative;
@@ -842,7 +895,35 @@ function EventList() {
                     overflow: hidden;
                 }
                 @media (max-width: 640px) {
+                    .cmcu-events-hub {
+                        padding: 12px 8px 24px 8px;
+                        border-radius: 14px;
+                    }
                     .tbx-hero-title { font-size: 1.05rem; }
+                    .events-main-grid {
+                        grid-template-columns: 1fr;
+                        gap: 14px;
+                    }
+                    .tbx-venue-card-horiz {
+                        min-width: 210px;
+                        max-width: 230px;
+                        height: 125px;
+                    }
+                    .adv-filter-popover {
+                        right: 0;
+                        left: auto;
+                        max-width: calc(100vw - 28px);
+                        width: 290px;
+                    }
+                    .pagination-step-btn {
+                        padding: 6px 10px;
+                        font-size: 0.78rem;
+                    }
+                    .pagination-num-btn {
+                        min-width: 30px;
+                        height: 30px;
+                        font-size: 0.78rem;
+                    }
                 }
                 .tbx-hero-meta-row {
                     display: flex;
@@ -1393,7 +1474,7 @@ function EventList() {
                                                 {ev.is_free !== false ? '🎟️ Vé miễn phí' : '🎟️ Có phí tham dự'}
                                             </span>
                                             <span className="tbx-hero-see-btn">
-                                                {isAdminOrStaff ? 'Quản trị sự kiện ▸' : 'Xem chi tiết & Lấy vé ▸'}
+                                                {isAdminOrStaff ? 'Quản trị sự kiện ▸' : 'Xem chi tiết ▸'}
                                             </span>
                                         </div>
                                     </div>

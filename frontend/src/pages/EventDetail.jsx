@@ -483,6 +483,12 @@ export default function EventDetail() {
                         right: -13px;
                     }
                 }
+                @media (max-width: 640px) {
+                    .tb-hero-ticket { border-radius: 16px; }
+                    .tb-ticket-left { padding: 16px 14px; }
+                    .tb-ticket-title { font-size: 1.12rem; }
+                    .tb-poster-frame { min-height: 200px !important; }
+                }
 
                 .tb-ticket-title {
                     font-size: 1.32rem;

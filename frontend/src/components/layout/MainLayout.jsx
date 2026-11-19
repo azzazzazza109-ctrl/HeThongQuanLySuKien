@@ -130,6 +130,14 @@ function NavIcon({ name, size = 16 }) {
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
       );
+    case 'login':
+      return (
+        <svg {...props}>
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+          <polyline points="10 17 15 12 10 7" />
+          <line x1="15" y1="12" x2="3" y2="12" />
+        </svg>
+      );
     default:
       return null;
   }
@@ -426,8 +434,10 @@ export default function MainLayout() {
       { path: '/admin/create', icon: 'create', label: 'Tạo sự kiện', mobileLabel: 'Tạo sự kiện' },
       { path: '/admin/tasks', icon: 'tasks', label: 'Bảng Task Kanban', mobileLabel: 'Kanban' }
     );
-  } else {
+  } else if (user) {
     menuItems.push({ path: '/my-tickets', icon: 'tickets', label: 'Ví vé của tôi', mobileLabel: 'Ví vé' });
+  } else {
+    menuItems.push({ path: '/login', icon: 'login', label: 'Đăng nhập', mobileLabel: 'Đăng nhập' });
   }
 
   const handleCopyId = () => {
@@ -716,6 +726,13 @@ export default function MainLayout() {
         .cmcu-profile-role.admin { background: #fce7f3; color: #be185d; }
 
         .cmcu-mobile-bottom-bar { display: none; }
+        .cmcu-main-content {
+          flex: 1;
+          padding: 18px 24px 32px 24px;
+          min-height: calc(100vh - 120px);
+          max-width: 100%;
+          box-sizing: border-box;
+        }
 
         @media (max-width: 1140px) {
           .cmcu-brand-text { display: none; }
@@ -723,6 +740,9 @@ export default function MainLayout() {
         }
 
         @media (max-width: 920px) {
+          .cmcu-main-content {
+            padding: 12px 10px 88px 10px;
+          }
           .cmcu-top-navbar {
             top: 8px;
             margin: 8px 12px 0 12px;
@@ -784,6 +804,21 @@ export default function MainLayout() {
             border: 1px solid rgba(45, 194, 117, 0.45);
           }
           .cmcu-layout-body { padding-bottom: 78px; }
+        }
+
+        @media (max-width: 640px) {
+          .cmcu-main-content {
+            padding: 8px 6px 88px 6px;
+          }
+          .cmcu-top-navbar {
+            margin: 6px 8px 0 8px;
+            padding: 5px 8px;
+          }
+          .cmcu-mobile-bottom-bar {
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+          }
         }
 
         .cmcu-dropdown-card {
@@ -1134,7 +1169,7 @@ export default function MainLayout() {
             <NavIcon name={isLight ? 'moon' : 'sun'} size={17} />
           </button>
 
-          {user && (
+          {user ? (
             <>
               <button
                 type="button"
@@ -1368,6 +1403,26 @@ export default function MainLayout() {
                 </div>
               )}
             </>
+          ) : (
+            <Link
+              to="/login"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '6px 12px',
+                borderRadius: '10px',
+                background: '#2dc275',
+                color: '#052e16',
+                fontWeight: 700,
+                fontSize: '0.82rem',
+                textDecoration: 'none',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 2px 8px rgba(45, 194, 117, 0.3)'
+              }}
+            >
+              Đăng nhập
+            </Link>
           )}
         </div>
       </header>
@@ -1660,7 +1715,7 @@ export default function MainLayout() {
       )}
 
       <div className="cmcu-layout-body" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <main className="main-content" style={{ padding: '18px 24px 28px 24px', flex: 1 }}>
+        <main className="cmcu-main-content">
           <Outlet context={{ colorMode, toggleColorMode }} />
         </main>
 

@@ -1,7 +1,7 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import apiClient from '../api/client';
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
@@ -14,10 +14,11 @@ export const AuthProvider = ({ children }) => {
                 setUser(JSON.parse(storedUser));
             }
         } catch (error) {
-            console.error("Lỗi đọc dữ liệu user:", error);
+            console.error("Lỗi lấy dữ liệu user:", error);
             localStorage.removeItem('user');
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }, []);
 
     const login = async (username, password) => {

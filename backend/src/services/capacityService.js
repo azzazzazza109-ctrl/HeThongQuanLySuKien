@@ -11,7 +11,7 @@ async function checkDuplicate(user, eventId) {
       message: `Sinh viên đã có vé (${existing.checkin_status}), mã vé: ${existing.ticket_code}`
     };
   }
-  return { ok: true, existing }; // Trả về existing để xử lý kích hoạt lại vé CANCELLED
+  return { ok: true, existing };
 }
 
 async function checkOverbooking(eventId, seatCapacity) {
@@ -20,7 +20,7 @@ async function checkOverbooking(eventId, seatCapacity) {
     t => t.event_id === Number(eventId) && t.checkin_status !== 'CANCELLED'
   );
   if (activeCount >= Number(seatCapacity)) {
-    await db.update('events', Number(eventId), { status: 'FULL' }); // Tự động khóa
+    await db.update('events', Number(eventId), { status: 'FULL' });
     return { ok: false, message: `Sự kiện đã đầy chỗ (${activeCount}/${seatCapacity}).` };
   }
   return { ok: true, activeCount };

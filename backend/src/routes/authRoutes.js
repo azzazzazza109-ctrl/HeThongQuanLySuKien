@@ -3,15 +3,14 @@ const router = express.Router();
 const { executeQuery } = require('../config/db');
 const bcrypt = require('bcryptjs');
 
-// Chuỗi băm mẫu bị lỗi khi chạy lệnh UPDATE trong SQL Server
 const BROKEN_SEED_HASH = '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
 
-// POST /api/auth/login
 router.post('/login', async (req, res, next) => {
   try {
-    const { username, password } = req.body;
+    const account = (req.body.username || req.body.email || '').trim();
+    const { password } = req.body;
 
-    if (!username || !password) {
+    if (!account || !password) {
       return res.status(400).json({ success: false, message: 'Vui lòng nhập tài khoản và mật khẩu' });
     }
 
@@ -21,7 +20,7 @@ router.post('/login', async (req, res, next) => {
       LEFT JOIN faculties f ON u.faculty_id = f.faculty_id
       WHERE u.email = @p0 OR u.student_code = @p0
     `;
-    const users = await executeQuery(query, [username.trim()]);
+    const users = await executeQuery(query, [account]);
 
     if (users.length === 0) {
       return res.status(401).json({ success: false, message: 'Tài khoản không tồn tại' });
@@ -32,17 +31,16 @@ router.post('/login', async (req, res, next) => {
 
     let isMatch = false;
 
-    // 1. Nếu tài khoản đang dính chuỗi băm lỗi từ câu lệnh SQL cũ -> Cho phép vào bằng '123456' và tự sửa lại DB
     if (storedPassword === BROKEN_SEED_HASH && password === '123456') {
       isMatch = true;
       const realHash = await bcrypt.hash('123456', 10);
       await executeQuery('UPDATE users SET password = @p0 WHERE user_id = @p1', [realHash, user.user_id]);
-    } 
-    // 2. Nếu là chuỗi băm Bcrypt hợp lệ
+    }
+
     else if (storedPassword.startsWith('$2')) {
       isMatch = await bcrypt.compare(password, storedPassword);
-    } 
-    // 3. Nếu là mật khẩu dạng chữ thường chưa băm ('123456')
+    }
+
     else {
       isMatch = (password === storedPassword);
     }
@@ -66,11 +64,10 @@ router.post('/login', async (req, res, next) => {
   }
 });
 
-// POST /api/auth/register
 router.post('/register', async (req, res, next) => {
   try {
     const { username, password, full_name, student_code, class_name, system_role = 'STUDENT' } = req.body;
-    
+
     const checkQuery = `SELECT * FROM users WHERE student_code = @p0 OR email = @p1`;
     const existing = await executeQuery(checkQuery, [student_code, username]);
 

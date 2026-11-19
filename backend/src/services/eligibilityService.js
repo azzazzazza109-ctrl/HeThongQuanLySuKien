@@ -2,8 +2,7 @@ const db = require('../config/db');
 
 async function checkEligibility(user, eventId) {
   const eligibilities = await db.findWhere('event_eligibility', e => e.event_id === Number(eventId));
-  
-  // Không có dòng nào trong event_eligibility = mở cho toàn trường
+
   if (eligibilities.length === 0) return { ok: true };
 
   const isEligible = eligibilities.some(

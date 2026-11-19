@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 export default function Checkin() {
     const { user } = useAuth();
     const [events, setEvents] = useState([]);
-    const [mode, setMode] = useState('TICKET_CODE'); // 'QR_TOKEN' | 'TICKET_CODE' | 'STUDENT_CODE'
+    const [mode, setMode] = useState('TICKET_CODE');
     const [inputVal, setInputVal] = useState('');
     const [eventId, setEventId] = useState('');
     const [result, setResult] = useState(null);

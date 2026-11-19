@@ -28,10 +28,7 @@ function formatVnTime(iso) {
   });
 }
 
-/* =============================================================
-   GET /api/admin/events/:id
-   Use-Case: Xem chi tiết sự kiện (kèm số chỗ trống & điều kiện)
-   ============================================================= */
+
 router.get('/events/:id', async (req, res, next) => {
   try {
     const eventId = Number(req.params.id);
@@ -56,10 +53,7 @@ router.get('/events/:id', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/* =============================================================
-   POST /api/admin/events
-   Use-Case: Admin tạo sự kiện mới (eligibility = [] là mở toàn trường)
-   ============================================================= */
+
 router.post('/events', async (req, res, next) => {
   try {
     const {
@@ -121,10 +115,7 @@ router.post('/events', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/* =============================================================
-   PUT & PATCH /api/admin/events/:id
-   Use-Case: Admin sửa sự kiện, thay đổi thời gian, sức chứa, trạng thái
-   ============================================================= */
+
 async function handleUpdateEvent(req, res, next) {
   try {
     const {
@@ -206,10 +197,7 @@ async function handleUpdateEvent(req, res, next) {
 router.put('/events/:id', handleUpdateEvent);
 router.patch('/events/:id', handleUpdateEvent);
 
-/* =============================================================
-   DELETE /api/admin/events/:id
-   Use-Case: Admin xóa sự kiện (Tự chuyển sang CLOSED nếu đã có vé)
-   ============================================================= */
+
 router.delete('/events/:id', async (req, res, next) => {
   try {
     const adminUserId = req.body?.admin_user_id || req.query?.admin_user_id;
@@ -238,10 +226,7 @@ router.delete('/events/:id', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/* =============================================================
-   GET /api/admin/events/:id/export
-   Use-Case: Xuất danh sách sinh viên đã điểm danh ra file CSV
-   ============================================================= */
+
 router.get('/events/:id/export', async (req, res, next) => {
   try {
     await requireAdminOrStaff(req.query.admin_user_id);
@@ -283,13 +268,7 @@ router.get('/events/:id/export', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/* =============================================================
-   QUẢN LÝ CÔNG VIỆC NỘI BỘ BTC (STAFF TASKS - PB-12)
-   Hỗ trợ: Xem danh sách (GET), Thêm task kèm checklist (POST),
-           Staff tick tiến độ / Admin duyệt (PATCH), Xoá task (DELETE)
-   ============================================================= */
 
-// 1. GET /api/admin/tasks - Lấy danh sách công việc (Dành cho cả ADMIN và STAFF)
 router.get('/tasks', async (req, res, next) => {
   try {
     const userId = req.query.admin_user_id || req.query.user_id;
@@ -315,7 +294,6 @@ router.get('/tasks', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// 2. POST /api/admin/tasks - Admin thêm công việc mới kèm chi tiết đầu việc (checklist)
 router.post('/tasks', async (req, res, next) => {
   try {
     const {
@@ -363,7 +341,6 @@ router.post('/tasks', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// 3. PATCH /api/admin/tasks/:id - Staff tick gửi tiến độ / Admin duyệt hoàn thành
 router.patch('/tasks/:id', async (req, res, next) => {
   try {
     const {
@@ -421,7 +398,7 @@ router.patch('/tasks/:id', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// 4. DELETE /api/admin/tasks/:id - Admin xoá công việc
+
 router.delete('/tasks/:id', async (req, res, next) => {
   try {
     const adminUserId = req.query?.admin_user_id || req.body?.admin_user_id || req.query?.user_id;

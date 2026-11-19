@@ -38,7 +38,7 @@ const executeQuery = async (query, params = []) => {
     const result = await request.query(query);
     return result.recordset;
   } catch (err) {
-    // Chuyển mã lỗi trùng khóa của SQL Server (2627, 2601) sang UNIQUE_VIOLATION
+
     if (err && (err.number === 2627 || err.number === 2601)) {
       err.code = 'UNIQUE_VIOLATION';
     }

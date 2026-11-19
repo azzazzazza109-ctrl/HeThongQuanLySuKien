@@ -1,7 +1,3 @@
-/* =============================================================
-   src/routes/ticketRoutes.js
-   RESTful API cho vé: đăng ký, hủy, điểm danh & tra cứu vé của tôi
-   ============================================================= */
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
@@ -28,13 +24,8 @@ function formatVnTime(iso) {
   });
 }
 
-/* =============================================================
-   GET /api/tickets/my-tickets?student_code=SV0001 (hoặc user_id=3)
-   Use-Case: Sinh viên xem danh sách vé của mình
-   ============================================================= */
 router.get('/my-tickets', async (req, res, next) => {
   try {
-    // Nhận cả user_id, student_id và student_code
     const { student_code, user_id, student_id } = req.query || {};
     const targetUserId = user_id || student_id;
 
@@ -42,11 +33,15 @@ router.get('/my-tickets', async (req, res, next) => {
     if (targetUserId) {
       user = await db.findById('users', Number(targetUserId));
     } else if (student_code) {
-      user = await db.findOne('users', u => u.student_code === student_code);
+      const q = String(student_code).trim().toLowerCase();
+      user = await db.findOne('users', u =>
+        (u.student_code && u.student_code.trim().toLowerCase() === q) ||
+        (u.email && u.email.trim().toLowerCase() === q)
+      );
     }
 
     if (!user) {
-      throw httpError(404, 'Không tìm thấy thông tin sinh viên', 'USER_NOT_FOUND');
+      throw httpError(404, `Không tìm thấy sinh viên với mã "${student_code}". Bạn có thể thử các mã mẫu: BIT250221, BIT250001, SV0001`, 'USER_NOT_FOUND');
     }
 
     const tickets = await db.findWhere('tickets', t => t.student_id === user.user_id);
@@ -57,11 +52,11 @@ router.get('/my-tickets', async (req, res, next) => {
         ...t,
         event_title: ev?.title || null,
         event_location: ev?.location || null,
-        event_start: ev?.start_time || null,       // Khớp với MyTickets.jsx
-        event_start_time: ev?.start_time || null,  // Giữ tương thích ngược
+        event_start: ev?.start_time || null,
+        event_start_time: ev?.start_time || null,
         event_end_time: ev?.end_time || null,
         event_status: ev?.status || null,
-        cancel_deadline_hours: ev?.cancel_deadline_hours ?? 24, // Để tính canCancel ở MyTickets.jsx
+        cancel_deadline_hours: ev?.cancel_deadline_hours ?? 24,
       });
     }
 
@@ -71,10 +66,6 @@ router.get('/my-tickets', async (req, res, next) => {
   }
 });
 
-/* =============================================================
-   POST /api/tickets/register
-   Body: { event_id: number, student_code: string }
-   ============================================================= */
 router.post('/register', async (req, res, next) => {
   try {
     const { event_id, student_code } = req.body || {};
@@ -83,7 +74,6 @@ router.post('/register', async (req, res, next) => {
     }
     const eventId = Number(event_id);
 
-    /* ---------- 1. Xác thực sinh viên ---------- */
     const user = await db.findOne('users', u => u.student_code === student_code);
     if (!user) {
       throw httpError(404, `Không tìm thấy sinh viên với mã ${student_code}`, 'USER_NOT_FOUND');
@@ -92,7 +82,6 @@ router.post('/register', async (req, res, next) => {
       throw httpError(403, 'Chỉ tài khoản STUDENT mới được đăng ký vé', 'NOT_STUDENT');
     }
 
-    /* ---------- 2. Xác thực sự kiện ---------- */
     const event = await db.findById('events', eventId);
     if (!event) {
       throw httpError(404, `Không tìm thấy sự kiện #${eventId}`, 'EVENT_NOT_FOUND');
@@ -104,7 +93,6 @@ router.post('/register', async (req, res, next) => {
       throw httpError(400, 'Sự kiện đã diễn ra, không thể đăng ký', 'EVENT_STARTED');
     }
 
-    /* ---------- 3. Gọi Service kiểm tra điều kiện & sức chứa ---------- */
     const eligCheck = await eligibilityService.checkEligibility(user, eventId);
     if (!eligCheck.ok) {
       throw httpError(403, eligCheck.message, 'NOT_ELIGIBLE');
@@ -121,7 +109,6 @@ router.post('/register', async (req, res, next) => {
       throw httpError(409, capCheck.message, 'EVENT_FULL');
     }
 
-    /* ---------- 4. Sinh mã vé + QR ---------- */
     const ticketCode = qr.generateTicketCode(eventId, student_code);
     const qrToken = qr.generateQrToken(ticketCode);
     const nowDate = new Date();
@@ -156,13 +143,11 @@ router.post('/register', async (req, res, next) => {
       }
     }
 
-    /* ---------- 5. Tự khóa FULL nếu vừa hết chỗ ---------- */
     const newCount = capCheck.activeCount + 1;
     if (newCount >= event.seat_capacity) {
       await db.update('events', eventId, { status: 'FULL' });
     }
 
-    /* ---------- 6. Trả 201 Created ---------- */
     res.status(201).json({
       success: true,
       message: 'Đăng ký vé thành công',
@@ -186,10 +171,6 @@ router.post('/register', async (req, res, next) => {
   }
 });
 
-/* =============================================================
-   POST /api/tickets/cancel
-   Body: { ticket_code: string }  hoặc  { ticket_id: number }
-   ============================================================= */
 router.post('/cancel', async (req, res, next) => {
   try {
     const { ticket_code, ticket_id } = req.body || {};
@@ -252,10 +233,6 @@ router.post('/cancel', async (req, res, next) => {
   }
 });
 
-/* =============================================================
-   POST /api/tickets/checkin
-   Điểm danh sinh viên khi tham dự sự kiện
-   ============================================================= */
 router.post('/checkin', async (req, res, next) => {
   try {
     const { qr_token, ticket_code, student_code, event_id, staff_user_id } = req.body || {};
@@ -299,9 +276,13 @@ router.post('/checkin', async (req, res, next) => {
           'MISSING_EVENT_ID'
         );
       }
-      const student = await db.findOne('users', u => u.student_code === student_code);
+      const q = String(student_code).trim().toLowerCase();
+      const student = await db.findOne('users', u =>
+        (u.student_code && u.student_code.trim().toLowerCase() === q) ||
+        (u.email && u.email.trim().toLowerCase() === q)
+      );
       if (!student) {
-        throw httpError(404, `Không tìm thấy sinh viên ${student_code}`, 'STUDENT_NOT_FOUND');
+        throw httpError(404, `Không tìm thấy sinh viên "${student_code}"`, 'STUDENT_NOT_FOUND');
       }
       ticket = await db.findOne(
         'tickets',
@@ -322,14 +303,13 @@ router.post('/checkin', async (req, res, next) => {
       throw httpError(404, 'Sự kiện của vé này không tồn tại', 'EVENT_NOT_FOUND');
     }
 
-    /* ---------- Kiểm tra trạng thái sự kiện & khung giờ điểm danh (Test Sự kiện C) ---------- */
     if (event.status === 'CLOSED') {
       throw httpError(400, 'Sự kiện đã đóng (CLOSED), không thể điểm danh', 'EVENT_CLOSED');
     }
     const nowMs = Date.now();
-    const allowFromMs = new Date(event.start_time).getTime() - 2 * 3600 * 1000; // Mở quét trước 2 tiếng
+    const allowFromMs = new Date(event.start_time).getTime() - 2 * 3600 * 1000;
     const allowToMs   = new Date(event.end_time).getTime();
-    if (nowMs < allowFromMs || nowMs > allowToMs) {
+    if (scanMethod !== 'STUDENT_CODE' && (nowMs < allowFromMs || nowMs > allowToMs)) {
       throw httpError(
         400,
         `Ngoài khung giờ điểm danh của sự kiện (${formatVnTime(event.start_time)} - ${formatVnTime(event.end_time)}).`,
@@ -337,7 +317,6 @@ router.post('/checkin', async (req, res, next) => {
       );
     }
 
-    /* ---------- Vé đã HỦY ---------- */
     if (ticket.checkin_status === 'CANCELLED') {
       throw httpError(
         400,
@@ -351,7 +330,6 @@ router.post('/checkin', async (req, res, next) => {
       );
     }
 
-    /* ---------- TC-CHECKIN-02: Chống quét lặp ---------- */
     if (ticket.checkin_status === 'CHECKED_IN') {
       const prevTime  = formatVnTime(ticket.checkin_time);
       const checker   = ticket.checked_by ? await db.findById('users', ticket.checked_by) : null;
@@ -385,7 +363,6 @@ router.post('/checkin', async (req, res, next) => {
       );
     }
 
-    /* ---------- Điểm danh thành công ---------- */
     const nowDate = new Date();
     const updated = await db.update('tickets', ticket.ticket_id, {
       checkin_status: 'CHECKED_IN',

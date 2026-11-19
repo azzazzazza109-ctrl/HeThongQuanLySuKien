@@ -9,8 +9,17 @@ function httpError(status, message, code) {
   return err;
 }
 
-async function requireAdminOrStaff(userId) {
-  if (!userId) throw httpError(400, 'Thiếu admin_user_id / user_id', 'MISSING_USER_ID');
+async function requireAdminOrStaff(reqOrUserId) {
+  let userId = reqOrUserId;
+  if (typeof reqOrUserId === 'object' && reqOrUserId !== null) {
+    const req = reqOrUserId;
+    userId = req.query?.admin_user_id || req.query?.user_id || req.body?.admin_user_id || req.body?.user_id;
+    if (!userId && req.headers?.authorization) {
+      const match = req.headers.authorization.match(/token-(\d+)/);
+      if (match) userId = match[1];
+    }
+  }
+  if (!userId) throw httpError(400, 'Thiếu admin_user_id / user_id hoặc token xác thực', 'MISSING_USER_ID');
   const u = await db.findById('users', Number(userId));
   if (!u) throw httpError(404, `Không tìm thấy user #${userId}`, 'USER_NOT_FOUND');
   if (!['ADMIN', 'STAFF'].includes(u.system_role)) {
@@ -28,10 +37,6 @@ function formatVnTime(iso) {
   });
 }
 
-/* =============================================================
-   GET /api/admin/events/:id
-   Use-Case: Xem chi tiết sự kiện (kèm số chỗ trống & điều kiện)
-   ============================================================= */
 router.get('/events/:id', async (req, res, next) => {
   try {
     const eventId = Number(req.params.id);
@@ -56,10 +61,6 @@ router.get('/events/:id', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/* =============================================================
-   POST /api/admin/events
-   Use-Case: Admin tạo sự kiện mới (eligibility = [] là mở toàn trường)
-   ============================================================= */
 router.post('/events', async (req, res, next) => {
   try {
     const {
@@ -121,10 +122,6 @@ router.post('/events', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/* =============================================================
-   PUT & PATCH /api/admin/events/:id
-   Use-Case: Admin sửa sự kiện, thay đổi thời gian, sức chứa, trạng thái
-   ============================================================= */
 async function handleUpdateEvent(req, res, next) {
   try {
     const {
@@ -161,10 +158,11 @@ async function handleUpdateEvent(req, res, next) {
     }
 
     let nextStatus = status || event.status;
-    if (!['OPEN', 'FULL', 'CLOSED'].includes(nextStatus)) {
+    if (!['OPEN', 'FULL', 'CLOSED', 'REJECTED'].includes(nextStatus)) {
       throw httpError(400, 'status không hợp lệ', 'INVALID_STATUS');
     }
-    if (nextStatus !== 'CLOSED') {
+
+    if (nextStatus !== 'CLOSED' && nextStatus !== 'REJECTED') {
       nextStatus = newCapacity === activeTickets ? 'FULL' : 'OPEN';
     }
 
@@ -176,7 +174,7 @@ async function handleUpdateEvent(req, res, next) {
       end_time: newEnd,
       seat_capacity: newCapacity,
       cancel_deadline_hours: cancel_deadline_hours !== undefined ? Number(cancel_deadline_hours) : event.cancel_deadline_hours,
-      status: nextStatus,
+      status: nextStatus === 'REJECTED' ? 'CLOSED' : nextStatus,
     };
 
     const updatedEvent = await db.update('events', eventId, patch);
@@ -198,7 +196,7 @@ async function handleUpdateEvent(req, res, next) {
     res.json({
       success: true,
       message: 'Cập nhật sự kiện thành công',
-      data: { ...updatedEvent, eligibility: updatedEligibility },
+      data: { ...updatedEvent, status: nextStatus, eligibility: updatedEligibility },
     });
   } catch (err) { next(err); }
 }
@@ -206,10 +204,6 @@ async function handleUpdateEvent(req, res, next) {
 router.put('/events/:id', handleUpdateEvent);
 router.patch('/events/:id', handleUpdateEvent);
 
-/* =============================================================
-   DELETE /api/admin/events/:id
-   Use-Case: Admin xóa sự kiện (Tự chuyển sang CLOSED nếu đã có vé)
-   ============================================================= */
 router.delete('/events/:id', async (req, res, next) => {
   try {
     const adminUserId = req.body?.admin_user_id || req.query?.admin_user_id;
@@ -238,10 +232,6 @@ router.delete('/events/:id', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/* =============================================================
-   GET /api/admin/events/:id/export
-   Use-Case: Xuất danh sách sinh viên đã điểm danh ra file CSV
-   ============================================================= */
 router.get('/events/:id/export', async (req, res, next) => {
   try {
     await requireAdminOrStaff(req.query.admin_user_id);
@@ -257,7 +247,7 @@ router.get('/events/:id/export', async (req, res, next) => {
       const stu = await db.findById('users', t.student_id);
       const fac = stu && stu.faculty_id ? await db.findById('faculties', stu.faculty_id) : null;
       const checker = t.checked_by ? await db.findById('users', t.checked_by) : null;
-      
+
       rows.push({
         stt: i + 1, student_code: stu?.student_code || '', full_name: stu?.full_name || '',
         cohort: stu?.cohort || '', class_name: stu?.class_name || '', faculty_name: fac?.faculty_name || '',
@@ -276,24 +266,16 @@ router.get('/events/:id/export', async (req, res, next) => {
     }
     const csv = BOM + lines.join('\r\n');
     const safeTitle = event.title.replace(/[^\w]/g, '_').replace(/_+/g, '_').substring(0, 30);
-    
+
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="diemdanh_event${eventId}_${safeTitle}.csv"`);
     res.send(csv);
   } catch (err) { next(err); }
 });
 
-/* =============================================================
-   QUẢN LÝ CÔNG VIỆC NỘI BỘ BTC (STAFF TASKS - PB-12)
-   Hỗ trợ: Xem danh sách (GET), Thêm task kèm checklist (POST),
-           Staff tick tiến độ / Admin duyệt (PATCH), Xoá task (DELETE)
-   ============================================================= */
-
-// 1. GET /api/admin/tasks - Lấy danh sách công việc (Dành cho cả ADMIN và STAFF)
 router.get('/tasks', async (req, res, next) => {
   try {
-    const userId = req.query.admin_user_id || req.query.user_id;
-    await requireAdminOrStaff(userId);
+    await requireAdminOrStaff(req);
 
     let tasks = await db.getAll('staff_tasks');
     if (req.query.event_id) {
@@ -315,22 +297,21 @@ router.get('/tasks', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// 2. POST /api/admin/tasks - Admin thêm công việc mới kèm chi tiết đầu việc (checklist)
 router.post('/tasks', async (req, res, next) => {
   try {
-    const {
-      admin_user_id, event_id, title, deadline,
-      assignee_id, note, description, checklist
-    } = req.body || {};
-
-    const actor = await requireAdminOrStaff(admin_user_id);
+    const actor = await requireAdminOrStaff(req);
     if (actor.system_role !== 'ADMIN') {
       throw httpError(403, 'Chỉ ADMIN mới có quyền thêm công việc', 'ONLY_ADMIN_CAN_CREATE');
     }
 
-    const finalAssigneeId = Number(assignee_id || admin_user_id);
-    if (!event_id || !title || !deadline || !finalAssigneeId) {
-      throw httpError(400, 'Thiếu event_id, title, deadline hoặc assignee_id', 'MISSING_FIELDS');
+    const {
+      event_id, title, deadline,
+      assignee_id, note, description, checklist, category, priority
+    } = req.body || {};
+
+    const finalAssigneeId = Number(assignee_id || actor.user_id);
+    if (!event_id || !title) {
+      throw httpError(400, 'Thiếu event_id hoặc title công việc', 'MISSING_FIELDS');
     }
     if (!await db.findById('events', Number(event_id))) {
       throw httpError(404, 'Không tìm thấy sự kiện', 'EVENT_NOT_FOUND');
@@ -339,39 +320,60 @@ router.post('/tasks', async (req, res, next) => {
       throw httpError(404, 'Không tìm thấy người phụ trách', 'ASSIGNEE_NOT_FOUND');
     }
 
-    let finalNote = note || null;
-    if (description !== undefined || Array.isArray(checklist)) {
+    let finalDeadline = deadline ? new Date(deadline) : new Date(Date.now() + 24 * 3600 * 1000);
+    if (isNaN(finalDeadline.getTime())) {
+      finalDeadline = new Date(Date.now() + 24 * 3600 * 1000);
+    }
+
+    let finalNote = '';
+    if (typeof note === 'object' && note !== null) {
+      finalNote = JSON.stringify(note);
+    } else if (note) {
+      finalNote = typeof note === 'string' ? note : JSON.stringify(note);
+    } else {
       finalNote = JSON.stringify({
+        category: category || 'Hậu cần',
+        priority: priority || 'NORMAL',
         description: description || '',
         checklist: Array.isArray(checklist) ? checklist : [],
         staff_note: '',
         submitted_for_check: false,
-        updated_at: new Date().toISOString()
+        created_at: new Date().toISOString()
       });
     }
 
     const task = await db.insert('staff_tasks', {
       event_id: Number(event_id),
       title: title.trim(),
-      deadline: new Date(deadline),
+      deadline: finalDeadline,
       assignee_id: finalAssigneeId,
       status: 'TODO',
       note: finalNote,
     });
 
-    res.status(201).json({ success: true, message: 'Tạo task thành công', data: task });
+    const assignee = await db.findById('users', finalAssigneeId);
+    const ev = await db.findById('events', Number(event_id));
+
+    res.status(201).json({
+      success: true,
+      message: 'Tạo task thành công',
+      data: {
+        ...task,
+        assignee_name: assignee?.full_name || null,
+        event_title: ev?.title || `Sự kiện #${task.event_id}`
+      }
+    });
   } catch (err) { next(err); }
 });
 
-// 3. PATCH /api/admin/tasks/:id - Staff tick gửi tiến độ / Admin duyệt hoàn thành
 router.patch('/tasks/:id', async (req, res, next) => {
   try {
+    const actor = await requireAdminOrStaff(req);
+
     const {
-      admin_user_id, user_id, status, note, assignee_id,
+      status, note, assignee_id,
       title, deadline, checklist, description, staff_note, submitted_for_check
     } = req.body || {};
-
-    await requireAdminOrStaff(admin_user_id || user_id);
 
     const taskId = Number(req.params.id);
     const task = await db.findById('staff_tasks', taskId);
@@ -402,6 +404,7 @@ router.patch('/tasks/:id', async (req, res, next) => {
       }
 
       patch.note = JSON.stringify({
+        ...parsedNote,
         description: description !== undefined ? description : parsedNote.description,
         checklist: Array.isArray(checklist) ? checklist : parsedNote.checklist,
         staff_note: staff_note !== undefined ? staff_note : parsedNote.staff_note,
@@ -409,7 +412,7 @@ router.patch('/tasks/:id', async (req, res, next) => {
         updated_at: new Date().toISOString()
       });
     } else if (note !== undefined) {
-      patch.note = note;
+      patch.note = typeof note === 'object' ? JSON.stringify(note) : note;
     }
 
     if (Object.keys(patch).length === 0) {
@@ -417,15 +420,24 @@ router.patch('/tasks/:id', async (req, res, next) => {
     }
 
     const updated = await db.update('staff_tasks', taskId, patch);
-    res.json({ success: true, message: 'Cập nhật task thành công', data: updated });
+    const assignee = updated.assignee_id ? await db.findById('users', updated.assignee_id) : null;
+    const ev = await db.findById('events', updated.event_id);
+
+    res.json({
+      success: true,
+      message: 'Cập nhật task thành công',
+      data: {
+        ...updated,
+        assignee_name: assignee?.full_name || null,
+        event_title: ev?.title || `Sự kiện #${updated.event_id}`
+      }
+    });
   } catch (err) { next(err); }
 });
 
-// 4. DELETE /api/admin/tasks/:id - Admin xoá công việc
 router.delete('/tasks/:id', async (req, res, next) => {
   try {
-    const adminUserId = req.query?.admin_user_id || req.body?.admin_user_id || req.query?.user_id;
-    const actor = await requireAdminOrStaff(adminUserId);
+    const actor = await requireAdminOrStaff(req);
 
     if (actor.system_role !== 'ADMIN') {
       throw httpError(403, 'Chỉ ADMIN mới có quyền xoá công việc', 'ONLY_ADMIN_CAN_DELETE');

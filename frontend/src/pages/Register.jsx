@@ -11,7 +11,7 @@ export default function Register() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
-    
+
     const { register } = useAuth();
     const navigate = useNavigate();
 
@@ -22,7 +22,7 @@ export default function Register() {
         setError('');
         setSuccess('');
         setLoading(true);
-        
+
         try {
             const res = await register(formData);
             if (res.success) {
@@ -38,8 +38,7 @@ export default function Register() {
 
     return (
         <div className="auth-container">
-            
-            {/* Cột Trái: Banner */}
+
             <div className="auth-banner">
                 <div className="banner-logo-wrapper">
                     <img src={logo} alt="CMCU Logo" className="banner-logo-img" />
@@ -48,25 +47,20 @@ export default function Register() {
                 <p>Tham gia cùng chúng tôi để không bỏ lỡ bất kỳ sự kiện hấp dẫn nào tại trường.</p>
             </div>
 
-            {/* Cột Phải: Form */}
             <div className="auth-form-wrapper">
                 <div className="auth-form-box">
-                    
-                    {/* Logo Form */}
+
                     <div className="auth-logo">
                         <img src={logo} alt="CMCU Logo" className="auth-logo-img" />
                         <span className="auth-logo-text">CMCU</span>
                     </div>
 
-                    {/* Tiêu đề */}
-                    <h2 className="auth-title">Tạo tài khoản mới 🚀</h2>
+                    <h2 className="auth-title">Tạo tài khoản mới</h2>
                     <p className="subtitle">Điền thông tin của bạn để bắt đầu</p>
-                    
-                    {/* Thông báo */}
+
                     {error && <div className="auth-error">{error}</div>}
                     {success && <div className="auth-error" style={{ backgroundColor: '#d1fae5', color: '#065f46' }}>{success}</div>}
-                    
-                    {/* Form nhập liệu */}
+
                     <form onSubmit={handleRegister}>
                         <div className="auth-form-group">
                             <label>Họ và tên</label>
@@ -90,7 +84,7 @@ export default function Register() {
                         </div>
 
                         <div className="auth-form-group">
-                            <label>Khoa</label>
+                            <label>Lớp</label>
                             <div className="input-wrapper">
                                 <input type="text" name="class_name" className="auth-input" placeholder="VD: CNTT-K3" onChange={handleChange} />
                             </div>
@@ -108,7 +102,6 @@ export default function Register() {
                         </button>
                     </form>
 
-                    {/* Link chuyển sang Đăng nhập */}
                     <div className="auth-footer">
                         Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
                     </div>

@@ -176,7 +176,7 @@ Bạn có thể dùng các tài khoản mẫu có sẵn trong `seed_data.sql` đ
 Dự án được xây dựng và phát triển bởi:
 - **Trần Long** ([@azzazzazza109-ctrl](https://github.com/azzazzazza109-ctrl))
 - **Bùi Anh Tú** ([@buitu2916-creator](https://github.com/buitu2916-creator))
-- **Như Huy** ([@Justnnhuy](https://github.com/Justnnhuy))
+- **Nguyễn Thị Yến Nhi** ([@Justnnhuy](https://github.com/Justnnhuy))
 
 ---
 *Trường Đại học CMC (CMC University) - Khoa Công nghệ Thông tin & Truyền thông*

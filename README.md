@@ -177,6 +177,6 @@ Dự án được xây dựng và phát triển bởi:
 - **Trần Long** ([@azzazzazza109-ctrl](https://github.com/azzazzazza109-ctrl))
 - **Bùi Anh Tú** ([@buitu2916-creator](https://github.com/buitu2916-creator))
 - **Nguyễn Thị Yến Nhi** ([@Justnnhuy](https://github.com/Justnnhuy))
-
+- **Trần Lâm** ([@LamTran0511](https://github.com/LamTran0511))
 ---
 *Trường Đại học CMC (CMC University) - Khoa Công nghệ Thông tin & Truyền thông*

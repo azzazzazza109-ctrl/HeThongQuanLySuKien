@@ -29,22 +29,19 @@ Hệ thống bao gồm các phân hệ chức năng chính sau:
 
 Dự án được tổ chức theo cấu trúc sau:
 
-```text
-HeThongQuanLySuKien/
-│
-├── backend/            # Mã nguồn xử lý logic, API, kết nối Database
-├── frontend/           # Mã nguồn giao diện người dùng
-└── .gitignore          # Cấu hình bỏ qua các file không cần thiết khi commit
-🚀 Hướng dẫn cài đặt và chạy dự án
-1. Yêu cầu hệ thống (Prerequisites)
+- `backend/`: Mã nguồn xử lý logic, API, kết nối Database.
+- `frontend/`: Mã nguồn giao diện người dùng.
+- `.gitignore`: Cấu hình bỏ qua các file không cần thiết khi commit.
+
+## 🚀 Hướng dẫn cài đặt và chạy dự án
+
+### 1. Yêu cầu hệ thống (Prerequisites)
 Đảm bảo máy tính của bạn đã cài đặt các môi trường cần thiết (tùy thuộc vào công nghệ bạn chọn):
+- Đã cài đặt `[Node.js / JDK / PHP]`
+- Đã cài đặt hệ quản trị cơ sở dữ liệu `[MySQL / SQL Server...]`
 
-Đã cài đặt [Node.js / JDK / PHP]
-
-Đã cài đặt hệ quản trị cơ sở dữ liệu [MySQL / SQL Server...]
-
-2. Cài đặt Backend
-
+### 2. Cài đặt Backend
+```bash
 # Di chuyển vào thư mục backend
 cd backend
 
@@ -57,21 +54,3 @@ cd backend
 
 # Chạy server backend
 # Ví dụ: npm start (hoặc lệnh tương ứng với framework của bạn)
-3. Cài đặt Frontend
-
-# Mở một terminal mới, di chuyển vào thư mục frontend
-cd frontend
-
-# Cài đặt thư viện
-npm install
-
-# Chạy giao diện
-npm start
-# (Giao diện thường sẽ chạy ở http://localhost:3000)
-👥 Thành viên thực hiện
-Lâm (Nhánh phát triển chính hiện tại)
-
-📞 Liên hệ
-Nếu có bất kỳ thắc mắc nào về dự án, vui lòng liên hệ qua email: [Email của bạn hoặc nhóm trưởng]
-
-Dự án được thực hiện phục vụ mục đích học tập và nghiên cứu.

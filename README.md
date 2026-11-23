@@ -178,5 +178,6 @@ Dự án được xây dựng và phát triển bởi:
 - **Bùi Anh Tú** ([@buitu2916-creator](https://github.com/buitu2916-creator))
 - **Nguyễn Thị Yến Nhi** ([@Justnnhuy](https://github.com/Justnnhuy))
 - **Trần Lâm** ([@LamTran0511](https://github.com/LamTran0511))
+- **Công Minh**([@congminh12-coder](https://github.com/congminh12-coder))
 ---
 *Trường Đại học CMC (CMC University) - Khoa Công nghệ Thông tin & Truyền thông*

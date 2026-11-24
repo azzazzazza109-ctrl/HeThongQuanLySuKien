@@ -179,5 +179,6 @@ Dự án được xây dựng và phát triển bởi:
 - **Nguyễn Thị Yến Nhi** ([@Justnnhuy](https://github.com/Justnnhuy))
 - **Trần Lâm** ([@LamTran0511](https://github.com/LamTran0511))
 - **Công Minh**([@congminh12-coder](https://github.com/congminh12-coder))
+- **Lê Danh Lượng**([@Ledanhluong](https://github.com/Ledanhluong))
 ---
 *Trường Đại học CMC (CMC University) - Khoa Công nghệ Thông tin & Truyền thông*
